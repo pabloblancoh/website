@@ -1,0 +1,574 @@
+# Final Project -- Spring 2024
+# Statistics of English Language
+# Members: Pablo Blanco, Aurora Hiveley, Kaylee Weatherspoon
+
+read(`ENGLISH.txt`): # this file should contain all english words as a list of lists
+randomize():
+
+Help:= proc():
+if args=NULL then
+ print(`The supported procedures are: generateWord, generateWordRandom, `):
+ print(`generateWordRandWted, generateWordSt,MakeTrM, Swap, DevTools`):
+ print(`Try, for example: Help(MakeTrM)`):
+else:
+ HelpHelper(args):
+fi:
+
+end:
+
+HelpHelper:=proc():
+ if nargs<>1 then:
+    print(`<><><><><><><><><><>ERROR<><><><><><><><><><>`):
+  print(`Too many arguments!`):
+    print(`<><><><><><><><><><><><><><><><><><><><><><>`):
+  return():
+ elif args[1]=generateWord then
+  print(`******************************************************************************************`):
+  print(`generateWord(K,lt): generates a word of length K using the transition matrix MakeTrM(K),`):
+  print(`which begins with letter lt. It generates the word deterministically letter-by-letter by`):
+  print(`choosing the most likely subsequent letter. Example:`):
+  print(`generateWord(7,o); `):
+  print(`will return [o, n, g, e, r, e, r]. If generateWord generates a word which is already in`):
+  print(`ENGLISH.txt, then it will return FAIL instead.`):
+  print(`******************************************************************************************`):
+ elif args[1]=generateWordRandom then
+  print(`******************************************************************************************`):
+  print(`generateWordRandom(K,lt,T): similar to generateWord, but instead of picking the most common`):
+  print(`successor, it selects from the T most common successors uniformly at random. For example, `):
+  print(`generateWordRandom(6,c,5);`):
+  print(`MAY sometimes return [c, e, n, s, e, n]. Upon generating a word already in ENGLISH.txt, the`):
+  print(`procedure returns FAIL instead.`):
+  print(`******************************************************************************************`):
+ elif args[1]=generateWordRandWted then
+  print(`******************************************************************************************`):
+  print(`generateWordRandWted(K,lt,T): similar to generateWordRandom, but the T most common successors`):
+  print(`are chosen with weights corresponding to their transition probability. For example,`):
+  print(`generateWordRandWted(5,h,20);`):
+  print(`MAY sometimes return [h, o, c, h, a]. Upon generating a word already in ENGLISH.txt, the`):
+  print(`procedure returns FAIL instead.`):
+  print(`******************************************************************************************`):
+ elif args[1]=generateWordSt then
+  print(`******************************************************************************************`):
+  print(`generateWordSt(K): generate a word letter-by-letter, using the transition table generated`):
+  print(`by MakeTrM(K,K). Try: generateWordSt(2).`):
+  print(`******************************************************************************************`):
+ elif args[1]=MakeTrM then
+  print(`******************************************************************************************`):
+  print(`MakeTrM(K): returns a 28x28 transition probability matrix by using data in ENGLISH.txt.`):
+  print(`In particular, the procedure only considers words of length at least K.`):
+  print(`Returns this matrix as a list of lists, where the n-th row corresponds to the n-th letter`): 
+  print(`of the alphabet. The first and last rows correspond to the \"start\" and \"end\" states,`):
+  print(`respectively. For example, try: `):
+  print(`MakeTrM(3)[2,3]`):
+  print(`to obtain the transition probability from \"a\" to \"b\" in words of length at least 3.`):
+  print(`******************************************************************************************`):
+  print(`MakeTrM(K,N): returns a table which encodes transition probabilities from an N-letter`):
+  print(`state to another letter. User must input K>=N. For N = 1, the output will be the same`):
+  print(`as MakeTrM(K). For N >= 2, the output will be a table T with indices of the form [a1,...,aN],j`):
+  print(`where a1,..,aN,j are the alphabetic indices of the corresponding letters. For example,`):
+  print(`T:=MakeTrM(3,2):`):
+  print(`T[[8,9],16];`):
+  print(`the second command will return the probability that given the sequence [h,i], that`):
+  print(`the next letter will be \"p\". Note that [h,i,p] has alphabetic indices [8,9,16].`):
+  print(` In this example, T has 2-letter states and takes as input words of length at least 3.`):
+  print(`******************************************************************************************`):
+ elif args[1]=Swap then
+  print(`******************************************************************************************`):
+  print(`Swap(LETTER): given a letter, given as a string, tells you its index in the alphabet. Try`):
+  print(`Swap("h")`):
+  print(`to see that h is the 8th letter of the alphabet.`):
+  print(`******************************************************************************************`):
+ elif args[1]=DevTools then
+  print(`******************************************************************************************`):
+  print(`DevTools(): the Help command but for developer procedures. Try it!`):
+  print(`******************************************************************************************`):
+ else:
+  print(`<><><><><><><><><><>ERROR<><><><><><><><><><>`):
+  print(`Help() does not support the following procedure:`):
+  print(args):
+  print(`<><><><><><><><><><><><><><><><><><><><><><>`):
+  return():
+ fi:
+end:
+
+# This is like Help() but for procedures only intended for development.
+DevTools:=proc():
+ if args=NULL then
+  print(`The supported procedures are: alphaToNum,ConstrSeq, ConvertInd, ModifMtx,weightedRand,weightedRand2`):
+ else:
+  DevTools1(args):
+ fi:
+end:
+
+DevTools1:=proc():
+ if nargs<>1 then:
+    print(`<><><><><><><><><><>ERROR<><><><><><><><><><>`):
+  print(`Too many arguments!`):
+    print(`<><><><><><><><><><><><><><><><><><><><><><>`):
+  return():
+ elif args[1]=alphaToNum then
+   print(`******************************************************************************************`):
+   print(`alphaToNum(W): given a word W as a sequence of letters, translate its alphabetic index. Try:`):
+   print(`alphaToNum([c,a,t]);`):
+   print(`which returns [3,1,20] and note that c,a,t have alphabetic indices 3,1,20, respectively.`):
+   print(`******************************************************************************************`):
+ elif args[1]=numToAlpha then
+   print(`******************************************************************************************`):
+   print(`numToAlpha(W): the inverse of alphaToNum.`):
+   print(`******************************************************************************************`):
+ elif args[1]=ConstrSeq then
+   print(`******************************************************************************************`):
+   print(`ConstrSeq(n,m): returns a set of all m-tuples such that all coordinates are in {1,..,n}`):
+   print(`with the first coordinate also allowed to be 0.`):
+   print(`******************************************************************************************`):
+ elif args[1]=weightedRand then
+   print(`******************************************************************************************`):
+   print(`weightedRand(L): given a list L of probabilities, expressed as rational numbers, returns`):
+   print(`said entry with the given probability. For example,`):
+   print(`weightedRand([1/6,2/6,3/6])`):
+   print(`will return 1/6 with probability 1/6, 2/6 with probability 2/6, and so on.`):
+   print(`******************************************************************************************`):
+ elif args[1]=weightedRand2 then
+   print(`weightedRand2(L): given a list L of probabilities, expressed as rational numbers, returns`):
+   print(`an index P with probability L[P]. For example,`):
+   print(`weightedRand([3/6,2/6,1/6])`):
+   print(`will return 1 with probability 3/6, 2 with probability 2/6, and so on.`):
+ elif args[1]=ConvertInd then
+   print(`******************************************************************************************`):
+   print(`ConvertInd(M): Given a list of lists, converts its elements (words) into numerical`):
+   print(`sequences corresponding to their alphabetically-indexed counterpart. Example:`):
+   print(`ConvertInd([[t,a,c,o],[c,a,t]])`):
+   print(`returns [[20, 1, 3, 15], [3, 1, 20]] because \"t\" is the 20th letter of the alphabet and`):
+   print(`so on...`):
+   print(`******************************************************************************************`):
+ elif args[1]=ModifMtx then
+   print(`******************************************************************************************`):
+   print(`ModifMtx(k,L): Given a positive integer k and a list of matrices (lists of lists) L,`):
+   print(`this procedure returns a list of the ROWS of length at least k. Example:`):
+   print(`ModifMtx(2,[ [[1]], [[2,2],[3,3]] ])`):
+   print(`will return [[2,2],[3,3]]`):
+   print(`******************************************************************************************`):
+ else:
+  print(`<><><><><><><><><><>ERROR<><><><><><><><><><>`):
+  print(`Help() does not support the following procedure:`):
+  print(args):
+  print(`<><><><><><><><><><><><><><><><><><><><><><>`):
+  return():
+ fi:
+end:
+
+
+# Note: the given english file contains some sketchy two letter words
+# For instance "[c,l]". I would like to ignore these.
+
+# MakeTrM(k1): constructs a transition matrix using all english words of length >= k. State size = 1 
+# Returns a list of lists with the first column/row denoting "start" and the last row (28) denoting "end"
+# MakeTrM(k1,2): returns a table T instead. T[["start","a"]] will return the probability that a word begins with "a"
+#
+# MakeTrM(k1, stSize):
+#
+MakeTrM:=proc(k1,stSize:=1) local E,F,n,m,i,j,b1,b2,Counts,colTotal,T,L,Tbl,States,st,W,Wpr:
+ option remember:
+ 
+ # Only consider words of length >=k
+ if k1 = 0 or k1 = 1 then
+  E:=[seq(op(L),L in ENG())]:
+ else: 
+  E:=ModifMtx(k1, ENG()):
+  #E:=TruncMtx(k1, [seq(op(s),s in ENG())]):
+ fi:
+  
+ E:=ConvertInd(E):          # convert all words into number lists. this is done to preserve data and for convenience.
+ n:=nops(E):                # number of words
+
+ ###
+ if stSize=1 then: 
+ Counts:=[[0$28]$28]:       # number of transitions
+ colTotal:=[[0]$28]:        # number of appearances
+ colTotal[1][1]:=n:            # every word has a start and an end
+ colTotal[28][1]:=n:
+ 
+ for i from 1 to n do:
+  Counts[1][E[i][1]+1]:=Counts[1][E[i][1]+1]+1: # the first row is dedicated to "start"
+  m:=nops(E[i]): # word length
+  for j from 1 to m-1 do:
+   colTotal[E[i][j]+1][1]:= colTotal[E[i][j]+1][1]+1: # letter E[i][j]+1 has appeared! note: "a" is colmn 2 but 1 in E.
+   # terrible to read, I know. update transition count for j to j+1th letter in the ith word:
+   Counts[E[i][j]+1][E[i][j+1]+1]:=Counts[E[i][j]+1][E[i][j+1]+1] + 1: 
+  od:
+  Counts[E[i][m]+1][28]:=Counts[E[i][m]+1][28]+1: # update "end" count
+  colTotal[E[i][m]+1][1]:= colTotal[E[i][m]+1][1]+1:
+ od:
+
+ T:= [seq([seq(Counts[j][i]/max(colTotal[j][1],1),i=1..28)],j=1..28)]: # transition matrix!
+
+ 
+ return(T):
+ fi:
+ ## 
+
+ if k1 < stSize then:
+  print(`state size argument must be smaller than minimum word length!`):
+  return(FAIL):
+ fi:
+ 
+ # for now, use numbers as table indices.
+ Tbl:=InitMtx(26,stSize):
+ States:=ConstrSeq(26,stSize):
+ for st in States do:
+  Counts[st]:=0:
+ od:
+
+ #Counts[0]:= n: # start has exactly this many transitions total.
+  
+ # Count all transitions:
+ for W in E do:
+  Wpr:= [0,op(W), 27]: # this lines up better with our table indices
+  b1:=1: 
+  b2:=b1+stSize-1:
+
+  while Wpr[b2]<>27 do:  
+   Tbl[ [op(b1..b2,Wpr)], Wpr[b2+1]]:= Tbl[ [op(b1..b2,Wpr)], Wpr[b2+1]] + 1: 
+   Counts[[op(b1..b2,Wpr)]]:=Counts[[op(b1..b2,Wpr)]]+1:
+   b1:=b1+1:
+   b2:=b1+stSize-1:
+  od:
+ od:
+
+ for st in States do:
+  for i from 0 to 27 do:
+   Tbl[st,i] := Tbl[st,i]/max(Counts[st],1):
+  od:
+ od:
+
+ return(op(Tbl)):
+end:
+
+
+# given a list of lists, removes all lists with fewer than k elements.
+TruncMtx := proc(k,M) local n,S,s,i:
+ n:=nops(M):
+ S:=[]:
+ for i from 1 to n do:
+  if nops(M[i])>=k then:
+   S:=[op(S),i]:
+  fi:
+ od:
+ [seq(M[s],s in S)]:
+end:
+
+# given a list of square matrices, consider only matrices with row length at least k.
+# return a list of the rows of such matrices.
+ModifMtx := proc(k,M) local m,S:
+ S:=[]:
+ for m in M do:
+  if nops(m)>=1 and nops(m[1])>=k then:
+   S:=[op(S), op(m)]:
+  fi:
+ od:
+ S:
+end:
+
+# converts the letters in (a list of lists) L into their alphabet index. 
+ConvertInd := proc(L) local alpha,R,i1,j1:
+ alpha:=table([a=1,b=2,c=3,d=4,e=5,f=6,g=7,h=8,i=9,j=10,k=11,l=12,m=13,n=14,o=15,p=16,q=17,r=18,s=19,t=20,u=21,v=22,w=23,x=24,y=25,z=26]):
+ R:=[seq([seq( alpha[L[i1][j1]], j1=1..nops(L[i1]))],i1=1..nops(L))]:
+end:
+
+
+# changes ones letter STRING to its alphabetic index. Do NOT put into ConvertInd. It breaks it? not sure if it still does.
+# example: Swap("c") returns 3.
+Swap:=proc(x1) local alpha:
+ alpha:=table(["a"=1,"b"=2,"c"=3,"d"=4,"e"=5,"f"=6,"g"=7,"h"=8,"i"=9,"j"=10,"k"=11,"l"=12,"m"=13,"n"=14,"o"=15,"p"=16,"q"=17,"r"=18,"s"=19,"t"=20,"u"=21,"v"=22,"w"=23,"x"=24,"y"=25,"z"=26]):
+ alpha[x1]:
+end:
+
+# initializes a transition matrix/table for an alphabet of length n and m-letter states. 0 always denotes "start" and n+1 denotes "end"
+InitMtx:=proc(n,m) local T,S,s,t:
+ T:=table([]):
+ S:=ConstrSeq(n,m):
+ for s in S do:
+  for t from 0 to n+1 do:  
+   T[s,t] := 0:
+  od:
+ od: 
+ op(T):
+end:
+
+# construct and return the set of all m-tuples of the form
+#           [a_1,...,a_m]
+#                              where a_1 \in {0,...,n} 
+#                              a_2,..,a_{m} \in {1,...,n}
+ConstrSeq := proc(n,m) local S,N,N1,N2,i,s:
+ N:={seq(i, i=1..n)}: # our alphabet, excluding start/end states
+ if m<1 then:
+  print(`what are you even trying to do?`):
+  return(FAIL):
+ fi:
+ if m = 1 then:
+  return({seq([i], i=0..n)}):
+ fi: 
+
+ # we may assume m>= 2
+ N1:= {0} union N:
+ S:=SeqHelper(m-1,N):
+ S:= {seq( seq([i, op(s)] ,s in S), i in N1)}: # handle the first coordinate
+
+end:
+
+# returns the set of all m-tuples where each coordinate lives in some set S.
+SeqHelper := proc(m,S) local s,t,T:
+ if m = 0 then:
+  return({[]}):
+ fi:
+ if m = 1 then:
+  return({seq([s], s in S)}):
+ fi:
+ T:=SeqHelper(m-1,S): 
+
+ return({seq(seq([s,op(t)], t in T), s in S)}): # I really dislike using recursion, but I think my hand is forced. - Pablo
+end:
+
+############################################ generate word functions:
+# generate a highly probable english word 
+# of length k starting with letter a
+generateWord := proc(K,A) local M,W,current,beta,xi:
+M:= MakeTrM(K,1):
+current := op(alphaToNum([A])):
+W := [current]: # build word
+
+for beta from 1 to K-1 do
+    # find index of most common letter after current letter
+    # note we *could* change this to second or third most common letter to get more words
+    # we check only rows 2-27 so we ignore start and end rows
+    member(max(M[current + 1][2..27]),M[current + 1],'xi'): 
+    W := [op(W), xi-1]:
+    current := xi-1:
+od:
+
+# convert from number indices back to letters
+# and check if word is an english word
+if not member(numToAlpha(W), ENG()[K]) then
+    numToAlpha(W);
+else 
+    fail:
+fi:
+
+end:
+
+
+
+
+### conversion helpers
+alpha := [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]:
+
+alphaToNum := proc(W) local word,eta,xi:
+word := []:
+
+for eta from 1 to nops(W) do
+    member(W[eta],alpha,'xi'):
+    word := [op(word),xi]:
+od:
+
+word:
+end:
+
+
+numToAlpha := proc(W) local word,eta:
+word := []:
+
+for eta from 1 to nops(W) do
+    word := [op(word), alpha[W[eta]]]:
+od:
+
+word:
+end:
+
+
+
+
+### some example calls and results
+# generateWord(5,c);
+## [c, o, n, g, e]
+
+# generateWord(7,o);
+## [o, n, g, e, r, e, r]
+
+# generateWord(4,q);
+## [q, u, n, g]
+
+
+
+### 04/15/2024
+
+
+# modification of generateWord 
+# now randomly picks one of the top R most common successor letters 
+# at each step of word construction
+generateWordRandom := proc(K,A,R) local M,W,current,beta,xi,ra,topR,successor:
+M:= MakeTrM(K,1):
+current := op(alphaToNum([A])):
+W := [current]: # build word
+ra := rand(1..R):
+
+for beta from 1 to K-1 do
+    # find index of most common letter after current letter
+    # note we *could* change this to second or third most common letter to get more words
+    # we check only rows 2-27 so we ignore start and end rows
+    topR := sort(M[current + 1][2..27])[-R..-1]:
+    successor := topR[ra()]:
+    member(successor,M[current + 1],'xi'): 
+    W := [op(W), xi-1]:
+    current := xi-1:
+od:
+
+# convert from number indices back to letters
+# and check if word is an english word
+if not member(numToAlpha(W), ENG()[K]) then
+    numToAlpha(W);
+else 
+    fail:
+fi:
+
+end:
+
+
+
+
+# inputs list of rational numbers 
+# randomly selects a list element based on weighting using size of rationals 
+# for example, the list [1/4,3/4] should select "2" 75% of the time
+# note that the rationals need not have the same denominator and 
+# need not sum to 1
+weightedRand := proc(L) local commonDen,markers,LL,R,eta,xi:
+commonDen := 1:
+
+for eta from 1 to nops(L) do
+    commonDen := commonDen * denom(L[eta]):
+od:
+
+LL := commonDen*L: # list of whole numbers
+markers := [seq( sum( LL[xi], xi=1..eta)  ,eta=1..nops(LL))]:
+R := rand(1..markers[-1])():
+
+for eta from 1 to nops(L) do
+    if R <= markers[eta] then
+        RETURN(L[eta]):
+    fi:
+od:
+
+fail:
+
+end:
+
+weightedRand2 := proc(L) local commonDen,markers,LL,R,eta,xi:
+commonDen := 1:
+
+for eta from 1 to nops(L) do
+    commonDen := commonDen * denom(L[eta]):
+od:
+
+LL := commonDen*L: # list of whole numbers
+markers := [seq( sum( LL[xi], xi=1..eta)  ,eta=1..nops(LL))]:
+R := rand(1..markers[-1])():
+
+for eta from 1 to nops(L) do
+    if R <= markers[eta] then
+        RETURN(eta):
+    fi:
+od:
+
+fail:
+
+end:
+
+## sample call
+# generateWordRandom(4,a,5); # can rerun repeatedly for different results!
+
+
+
+
+
+### 04/19/2024
+
+# modification of generateWord 
+# now randomly picks one of the top R most common successor letters 
+# at each step of word construction -- USING A WEIGHTED RANDOM SELECTOR
+# notice that this one seems to return fail more often. makes sense if you think about it
+generateWordRandWted := proc(K,A,R) local M,W,current,beta,xi,topR,successor:
+M:= MakeTrM(K,1):
+current := op(alphaToNum([A])):
+W := [current]: # build word
+
+for beta from 1 to K-1 do
+    # find index of most common letter after current letter
+    # note we *could* change this to second or third most common letter to get more words
+    # we check only rows 2-27 so we ignore start and end rows
+    topR := sort(M[current + 1][2..27])[-R..-1]:
+    successor := weightedRand(topR):
+    member(successor,M[current + 1],'xi'): 
+    W := [op(W), xi-1]:
+    current := xi-1:
+od:
+
+# convert from number indices back to letters
+# and check if word is an english word
+if not member(numToAlpha(W), ENG()[K]) then
+    numToAlpha(W);
+else 
+    fail:
+fi:
+
+end:
+
+
+
+## sample call
+# generateWordRandWted(4,a,5); # compare to unweighted version this way
+
+# input state size which should be >=2 and a starting letter?? can be done later.
+generateWordSt := proc(stSize, opti:=-1) local L,let,W,list,bt,a1,a2:
+ # generate stSize many words first:
+ list:=MakeTrM(3,1)[1]: # first letter transition
+ if opti = -1 then
+  let:=weightedRand2([op(2..28, list)]): # this is our first letter!
+ elif opti>=1 and opti<=26 then
+  let:=opti:
+ fi:
+
+ W:=[0,let]: 
+ 
+
+ # this is now a table
+ while nops(W) < stSize do:
+   L:=MakeTrM(max(stSize,nops(W)),nops(W)):
+   let:=weightedRand2( [seq( L[W,bt] ,bt=1..27 )] ):
+  W:=[op(W),let]:
+ od:
+ 
+ a1:=1:
+ a2:=a1+stSize-1:
+ L:=MakeTrM(max(stSize,3),stSize):
+ while W[-1]<>27 do:
+  
+  let:=weightedRand2( [seq( L[ [op(a1..a2 ,W)] ,bt] ,bt=1..27 )] ):
+  W:=[op(W),let]:
+  a1:=a1+1:
+  a2:=a1+stSize-1:
+ od:
+
+ W:=[op(2..nops(W)-1,W)]:
+
+
+# convert from number indices back to letters
+# and check if word is an english word
+if nops(W)>=29 then:
+ return(numToAlpha(W));
+fi:
+if not member(numToAlpha(W),ENG()[nops(W)]) then
+    numToAlpha(W);
+else 
+    fail:
+fi:
+end:
+
