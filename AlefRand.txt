@@ -1,0 +1,399 @@
+with(combinat):
+
+print(`This is a supplementary procedure for RectTile.txt and Recto.txt written by Pablo Blanco.`):
+print(`Use HelpRand() to see procedures.`):
+print(`Version date: June 29, 2026.`):
+
+Randomize():
+
+HelpRand:=proc():
+ if args=NULL then:
+	print(`The procedures are:`):
+	print(`MakeRandPuz,MakeRandTiling`):
+ elif nargs=1 and args[1]=MakeRandPuz then:
+	print(`MakeRandPuz(T,K,p,q): Makes a random Recto puzzle (by using MakeRandTiling).`):
+	print(`Include vertical edges with probability p and include horizontal edges with`):
+	print(`probability q (conditional on a closed tile). The output puzzle has `):
+	print(`configuration T and at most K tiles. Try: `):
+	print(`n:=15;`):
+	print(`P:=MakeRandPuz([n$n], n+1,10/100,30/100):`):
+	print(`PUZ:=P[2]:`):
+	print(`SOL:=P[1]:`):
+	print(``):
+
+	print(`By default, p=1/10 and q=3/10. To plot the puzzle use PlotPuz from Recto.txt.`):
+	print(`NOTE: K limit not yet implemented. Use K=10000.`):
+ elif nargs=1 and args[1]=MakeRandTiling then:
+	print(`MakeRandTiling(n,m,K,p,q): Makes a random tiling for a rectangle with n rows `):
+	print(`and m columns. See the entry for MakeRandPuz for more detail. Try:`):
+	print(`R:=MakeRandTiling(17,15,15,1/10,3/10):`):
+	print(``):
+	print(`To plot the result, use PlotT from RectTile.txt.`):
+	print(`PlotT(n,m,R);`):
+ else:
+
+
+ fi:
+
+
+end:
+
+
+
+####################################################################
+# MakeRandPuz(T,K,p,q)
+#
+# Use MakeRandTiling to make a random puzzle with tiling T, at most K tiles, 
+# vertical edge inclusion probability p
+# horizontal edge inclusion probability q
+# 
+####################################################################
+MakeRandPuz:=proc(T::list,K::posint,p:=10/100,q:=30/100) local n,m,R:
+ n:=nops(T):
+ m:=T[-1]: 
+ R:=MakeRandTiling(n,m,K,p,q):
+
+ MakePuzzle(T,R):
+end:
+
+
+###############
+# Make a random n by m tiling using our alphabet, where tiles are closed with probability p (vertical edge inclusion)
+# and new horizontal edges are made with probability q 
+# Also, the random tiling can only have at most K tiles.
+################
+MakeRandTiling:=proc(n::posint,m::posint,K,p:=10/100,q:=30/100) local L1,L2,tI,T,I1,i,o1,c1,dimx,dimy,S,o2,TopToBot:
+
+ tI:=0: 			# the index of the newest tile. In other words, the number of tiles.
+ T:=table(sparse=(),[]): 	# this will store all tiles
+ T[-1]:={}: 			# T[-1] will contain the indices of all currently open tiles
+
+ ######
+ # this procedure compares the indices of tiles from their location in their grid top to bottom
+ # return true if i1 < j1
+ ####
+ TopToBot:=proc(i1, j1):
+	if T[i1][1][1] < T[j1][1][1] then:
+		return(true):
+	fi:
+
+	false:
+ end:
+
+ L1:=RandStartLtr(n,K,q):
+ #print(`First letter:`, L1):
+ I1:= DecodeOpen(L1,T[-1]):
+ L2:=L1: # a quirk to make the code work
+ S:=I1[3]:
+ 
+ for i from 2 to m+1 do:
+	L1:=L2:
+	S:=I1[3]:   # a table with information about new open tiles
+	tI+=nops(I1[1]):				# update number of tiles
+	T[-1]:= (T[-1] minus I1[2]) union I1[1]:  	# update the set of indices for open tiles
+
+	# open new tiles from last time
+	for o1 in I1[1] do:
+		T[o1]:= [[S[o1][2] ,i-2],[S[o1][1],0]]:		# format is: [[j,i],[a,b]]. where the upper right vertex is [j-1,i]. a is the height and b is the length.
+
+	od:
+
+	# increase the length of tiles that are still open, and update the x-coordinate of their top-right vertex by 1
+	for o2 in T[-1] do:  	
+
+		T[o2][1][2]++:	# update x-coord
+		T[o2][2][2]++:	# update length
+		#print(`Updated Tile State:`, T[o2]);
+	od:
+
+
+
+	# this is our new letter:
+	L2:=RandNextLtr(L1,n,K-tI,p,q):
+	#print(`Letter:`, L2):
+	if nops(L2[1]) > K-tI then:
+		print(`(ERROR) Expected vs actual`,K-tI, nops(L2[1])):
+		print(`First letter: `, L1):
+		print(`Second Letter: `, L2):
+	fi:
+
+	I1:= DecodeOpen(L1,sort(T[-1],TopToBot),tI,L2):
+ od:
+
+ [seq(T[i],i=1..tI)]: # the tiling 
+end:
+
+####################################
+# Given a previous letter L1 and current letter L2, with a set A which labels tiles top to bottom and latest label t,
+# Return a list [O1,C1,T] 
+# where O1 is the set of indices for new open tiles and C1 is the set of indices for closed tiles
+# and T is a table which maps a number in O1 to the height and y coordinate of the tile. e.g. T[4]=[5,6] means tile 4 has a height of 6 and it has coordinate 5
+######################################
+DecodeOpen:=proc(L1, A, t:=0, L2:=L1) local L3,tiles1,O1,C1,T,newidx,map,i,shift,unpV,v,sortV,nV,ti:
+ option remember:
+
+
+
+ O1:=DEQueue():
+ C1:=DEQueue():
+ T:=table([]):
+ i:=1:			# the ith tile we are looking at, top to bottom. A[i] is the tile's index
+ shift:=1:
+ 
+ unpV:={seq(op(v), v in L2[1])}: # put all vertical edges of L2 in a set
+ 
+ sortV:=sort(L2[1],FirstElem):   # sort the vertical edges of L2
+ nV:=nops(L2[1]):
+
+ # these are the tiles from L1
+ if A <> [] and A <> {} then:
+ for tiles1 in [op(2..-1,L1[2])] do:
+	if member(tiles1,unpV) then: # the tile has been closed
+		C1:-push_back(A[i]):		# record that the tile has been closed
+	fi:
+	
+	# if the tile is still open, then nothing has changed there
+	
+	i++:	
+ od:
+ fi:
+
+
+ # record newly opened tiles
+ for ti in sortV do:
+	O1:-push_back(t+shift):
+	T[t+shift]:=[ti[-1]-ti[1]+1 ,ti[1]]:	# record height and y-coordinate in the table
+	
+	shift++:
+ od:
+
+
+ [convert(O1,set), convert(C1,set), op(T)]:
+end:
+
+# this procedure sort compares list ordering by their first elem
+FirstElem:=proc(A,B):
+ if A[1] > B[1] then:
+  return(false):
+ fi:
+
+ true:
+end:
+
+########################################
+# Generate a random starting letter, with horizontal edge probability q
+#########################################
+RandStartLtr:=proc(n,K,q) local H,V,i,k,numtiles:
+ # An alternative encoding of the starting letters
+# Format: L:=[{labeled vertical edges, grouped by the tile they belong to}, {horizontal edges}]
+# Note that nops(L[1]) tells you the number of new tiles that each letter introduces
+
+
+ # first, choose horizontal edges with probability q
+ H:={seq(i*Dice(q) ,i=1..n-1)} minus {0}:	
+
+ if K<1 then:
+	error "Starting letter has to create at least one tile.":
+ fi:
+
+ # truncate the number of horizontal edges to be at most K:
+ numtiles:=nops(H)+1:
+ if numtiles > K then:
+	H:=randcomb(H,K-1):
+	numtiles:=K:
+ fi:				# NOTE: if q is chosen appropriately, this should not happen very often
+
+ H:= H union {0,n}:
+
+ V:={}:
+
+ # Vertical edges for a starting letter are all edges; however, we must group them accordingly to encode the tiles
+ for i from 1 to numtiles do:
+	V:= V union {[`$`(H[i]+1...H[i+1])]}:
+ od:
+
+ [V,H]:
+end:
+
+# return 1 with probability p
+Dice:=proc(p::rational):
+ if rand(1..denom(p))()<=numer(p) then
+	return(1):
+ fi:
+ 
+ return(0):
+end:
+
+###################################
+# given a letter L (and other parameters), generate a random next letter
+###################################
+RandNextLtr:=proc(L,n,K,p,q) local V1,H1,s1,HQ,VQ,numtiles,i,j,newTileTracker,compo,Seg,SegTiles,prevEnd,prevStart,e1,e2,H,V,prevv,optH,idxSub:
+ # the vertical and horizontal edges of the previous letter
+ V1:=L[1]:
+ H1:=L[2]:
+ numtiles:=nops(H1)-1:
+ newTileTracker:=0: # keep track of the number of new tiles being created... should be < K
+
+ VQ:=DEQueue(): # Queue of vertical edges
+ compo:=0: # the number of continuous segments in the vertical edges
+ prevStart:=NULL:
+ prevEnd:=NULL:
+ Seg:=table([]): # Encodes forced horizontal edges
+ SegTiles:=table([]): # this will group together the horizontal edges (from rev letter) that belong to a previous tile. Uses a linked list.
+
+ HQ:=DEQueue(0,n): # this will contain the forced horizontal edges ONLY
+ 
+ # choose vertical edges
+ for i from 1 to numtiles do:
+	SegTiles[H1[i]]:=H1[i+1]:	# turn H1 into a linked list
+	
+	# close the tile with prob p
+ 	if Dice(p) = 1 and K<>0 then:
+		VQ:-push_back(`$`(H1[i]+1...H1[i+1])):
+
+		if H1[i]=prevEnd then: 			# still in the same segment...
+
+			#SegTiles[prevEnd]:=H1[i+1]:	# add to linked list..
+			prevEnd:=H1[i+1]:
+			#SegTiles[prevEnd]:=FAIL: 
+			Seg[prevStart]:=prevEnd:
+		else: 					# new segment found!
+			prevStart:=H1[i]:
+			prevEnd:=H1[i+1]:
+			Seg[prevStart]:=prevEnd:
+			#SegTiles[prevStart]:=prevEnd:
+			#SegTiles[prevEnd]:=FAIL: 		# marks the end of linked list
+			compo++:				# note that a new segment means at least one new tile will be added
+			newTileTracker++:			
+		fi:
+	else:
+		HQ:-push_back(H1[i],H1[i+1]):		 # since we did not close the tile, we have to include its horizontal edges. No matter what.
+ 		
+	fi:
+
+od:
+
+ SegTiles[n]:=FAIL:
+
+ VQ:=convert(VQ,set):
+
+ # we closed too many tiles... now we need to open some of them back up
+
+
+ if compo > K then:
+	HQ:=DEQueue(0,n): # reset horizontal edges...
+ 	# use SegTiles to accomplish this. 
+	# Choose a subset of size compo-K from indices(Seg).
+	
+
+	idxSub:=randcomb({indices(Seg)}, compo-K):	# we need to re-open these ...
+	
+	# for each tile we decided to re-open...
+	j:=op({indices(SegTiles)}[1]):
+	i:=1:
+	
+	#print(SegTiles, Seg):
+	#print(`reopening these from Seg... `, idxSub):
+	# use the linked list SegTiles to iterate through and open ALL tiles in those segments
+	while j <> FAIL do:
+		#print(`Condition`, j, op(idxSub[i])):
+		if j > Seg[op(idxSub[i])] and i < compo-K then:
+			i++:
+		fi:
+
+		#print(`Looking at tile..`, idxSub[i]):
+		
+		if SegTiles[j] <> FAIL then:
+		# assume j >= idxSub[i]. if the current prev letter tile is contained in a segment to open...
+		if  SegTiles[j] <= Seg[op(idxSub[i])] then:	
+			#print(`OPENED:`, j, SegTiles[j]):
+
+			HQ:-push_back(j,SegTiles[j]): # we have to include the prevletter tile's horizontal edges
+			VQ:= VQ minus {`$`(j+1..SegTiles[j])}: # none of these vertical edges
+		else:
+			#print(`REMAINS CLOSED:`, [`$`(j+1..SegTiles[j])]):
+		fi:
+
+		fi:
+		
+		j:=SegTiles[j]:	# check next tile from previous letter
+	od:
+
+	 if VQ = {} then:
+		return([VQ,convert(HQ,set)]):
+ 	fi:
+	
+	# group together the vertical edges:
+	V:=[[VQ[1]]]:
+	H:=convert(HQ,set):
+ 	prevv:=VQ[1]: # the most recent vertical edge we looked at
+ 	for i from 2 to nops(VQ) do:	
+ 		if VQ[i] = prevv+1 and not(member(prevv,H)) then:	# conditions to be in the same tile
+			V:=[op(1..-2, V), [op(V[-1]),VQ[i]]]: # add to most recent tile
+		else:
+			V:=[op(V), [VQ[i]]]: 		# they are in different tiles
+		fi:
+
+		prevv:=VQ[i]:
+ 	od:
+
+
+	# While you are at it, construct the set of horizontal edges. Then RETURN. 
+	#print(`Special:`, [{op(V)}, H]):
+	return([{op(V)}, H]):
+	#compo:=K:
+ fi:
+ 
+
+
+ # Roll a die with probability q to select new horizontal edges. However, we can only add at most K-compo horizontal edges.
+ # Since each horizontal edge will create a new tile.
+ 
+ 
+ optH:=DEQueue():  # this will contain OPTIONAL horizontal edges, determined by dice roll
+ 
+
+ # this code adds in forced horizontal edges resulting from closed tiles
+ for e1 in indices(Seg) do:
+	HQ:-push_back(op(e1)):
+ 	HQ:-push_back(Seg[op(e1)]):
+	for e2 from op(e1)+1 to Seg[op(e1)]-1 do:
+
+		if Dice(q) = 1 and K > compo then:
+			optH:-push_back(e2):	# "add" optional edge... for now
+			
+			newTileTracker++:  # Is this needed anymore?
+		fi:
+	od:
+ od:
+
+ optH:=convert(optH,set):
+ if nops(optH) > K-compo then:
+
+ 	optH:=randcomb(optH,K-compo):
+ fi:
+
+ H:=optH union convert(HQ,set):	# this will be the set of horizontal edges
+ 
+ if VQ = {} then:
+	#print(`Return code 1`):
+	return([VQ,H]):
+ fi:
+
+ # group together the vertical edges:
+ V:=[[VQ[1]]]:
+ prevv:=VQ[1]: # the most recent vertical edge we looked at
+ for i from 2 to nops(VQ) do:	
+ 	if VQ[i] = prevv+1 and not(member(prevv,H)) then:	# conditions to be in the same tile
+		V:=[op(1..-2, V), [op(V[-1]),VQ[i]]]: # add to most recent tile
+	else:
+		V:=[op(V), [VQ[i]]]: 		# they are in different tiles
+	fi:
+
+	prevv:=VQ[i]:
+ od:
+
+ #print(`Return code 2`):
+ [{op(V)},H]:
+end:
+
