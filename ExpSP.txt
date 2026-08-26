@@ -1,0 +1,1733 @@
+
+
+#ExpSP.txt: A Maple package by Pablo Blanco and Doron Zeilberger
+#Version of April 15, 2025
+Digits:=300:
+print(`This is ExpSP.txt, a Maple package by Pablo Blanco and Doron Zeilberger`):
+print(`Accompanying their article`):
+print(`Automatic Generation of Generating Functions for Enumerating Spanning Trees`):
+print(``):
+print(`For a list of the MAIN functions, type Help(); for help with a specific function type: Help(FunctionName);`):
+print(``):
+print(`For a list of the HELP functions, type Help1(); for help with a specific function type: Help(FunctionName);`):
+
+print(``):
+print(`For a list of the STORY functions, type HelpS(); for help with a specific function type: Help(FunctionName);`):
+
+with(combinat):
+with(GraphTheory):
+with(LinearAlgebra):
+with(ArrayTools):
+randomize(): # randomizes the seed for the session's random number generator.
+
+HelpS:=proc(): 
+
+if nargs=0 then 
+
+print(`The Story functions are:`):
+
+print(` HnrS, GnrS, GridGrS, TorusS  `):
+
+else
+ Help(args):
+fi:
+end:
+
+Help1:=proc(): 
+
+if nargs=0 then 
+
+print(`The HELP functions are:`):
+
+print(`CtoR, Cycle, Cyli, GenerateFunct, GnR, Gnr, GridGr, GuessRec, HnR, Hnr, `):
+print(`HypCub, LaplMat, LeafCounter, Path, RGF, RandomSuccessor, Rseq, SerPar, `):
+print(`SPHelper, Torus`):
+
+else
+ Help(args):
+fi:
+end:
+
+
+Help:=proc(): 
+
+if nargs=0 then 
+
+print(`The MAIN functions are`):
+
+print(` AllSpanTree, Asy1, BZc, EstAvgNumLeaves, GFsimu, GFsimuStats,LeafWt,NumLeaves,NumLeavesSeq, NumSpanTree, NumSpanTreeSeq, `):
+print(` ProdGraph, RandomGraph, RandomTree, SeqGnr, SeqGnrL, SeqHnr,  SeqHnrL, SymbSpanTree, SymbSpanTreeExc, SymbSpanTreeInc`): 
+print(`VtxTransNumLeaves, VtxTransNumLeavesSeq`):
+
+
+elif nargs=1 and args[1]=EstAvgNumLeaves then
+ print(`EstAvgNumLeaves(P,n,r,K): with the given parameters, runs K trials, on a graph`):
+ print(`which is constructed by procedure P with parameters n,r. Each trial generates`):
+ print(`a random tree on the graph. EstAvgNumLeaves will return the average number of`):
+ print(`leaves across all trials (as a fraction). Try:`):
+ print(`Note: for values K < 100, a warning will be printed.`):
+ print(`EstAvgNumLeaves(Torus,50,3,100);`):
+
+elif nargs=1 and args[1]=LeafCounter then
+print(`LeafCounter(n,E): Given a forest n,E, return the number of leaves.`):
+print(`Try:`):
+print(`with(GraphTheory):`):
+print(`T:= RandomTree(RandomGraph(20)):`):
+print(`DrawGraph(Graph(T));`):
+print(`LeafCounter(T);`):
+
+elif nargs=1 and args[1]=BZc then
+print(`BZc(F,[arg2..argn],st,K,c): Given a graph-generating procedure F which takes in arguments arg1...argn, parametrized by n, and a starting place st`):
+print(`and ending place K for guessing parameters, where the family is parametrized by n and the n-th graph has n*c vertices. Outputs the so-called `):
+print(`Blanco-Zeilberger constant for that family that is the limit of the average number of leaves in a random spanning tree divided by the number of vertices`):
+print(`Note that for the complete graph, i.e. all labeled trees, this constant is 1/e. Try`):
+print(`Try: BZc(HnR,[{1,3}],3,60,1);`):
+
+
+elif nargs=1 and args[1]=Asy1 then
+print(`Asy(f,n,t): Outputs the asymptotic of the coefficient of t^n in the rational function f. Try:`):
+print(`Asy1(1/(1-t-t^2),t,n);`):
+
+elif nargs=1 and args[1]=VtxTransNumLeavesSeq then
+print(`VtxTransNumLeavesSeq(F,[arg2..argn],a,b): See the entry for NumLeavesSeq. Only use this procedure when F generates`):
+print(`vertex-transitive graphs. Try:`):
+print(`VtxTransNumLeavesSeq(Torus, [5], 7, 30);`):
+
+elif nargs=1 and args[1]=VtxTransNumLeaves then
+print(`VtxTransNumLeaves(n,E): Variant of NumLeaves. Counts the total number of leaves across all spanning trees. `):
+print(`Only use for graphs which are vertex-transitive! Try:`):
+print(`VtxTransNumLeaves(Gnr(200,5));`):
+print(`VtxTransNumLeaves(Torus(50,25));`):
+
+elif nargs=1 and args[1]=NumLeavesSeq then
+print(`NumLeavesSeq(F,[arg2..argn],a,b): Given a graph-generating procedure F which takes in arguments arg1...argn,`):
+print(`NumLeavesSeq will output the sequence of NumLeaves(F(x, arg2,..,argn)) with x=a..b. Try:`):
+print(`NumLeavesSeq(Torus, [3], 7, 50);`):
+
+elif nargs=1 and args[1]=NumLeaves then
+print(`NumLeaves(n,E): given a graph G with edge-set E on [n], returns the sum of the number`):
+print(`of leaves of every spanning tree of G.`):
+print(`Try: NumLeaves(Torus(10,3));`):
+
+elif nargs=1 and args[1]=LeafWt then
+print(`LeafWt(n,E,t): for a graph G on n vertices with edge set E,  outputs the weight enumerator where a `):
+print(`tree T is assigned t^NumberOfLeaves. Try:`):
+print(`G:=RandomGraph(10,1/2):`):
+print(`LeafWt(G,t):`):
+print(`DrawGraph(Graph(G)):`):
+
+elif nargs=1 and args[1]=GFsimuStats then
+print(`GFsimuStats(n,E,t,K): Given a graph n,E, runs GFsimu(n,E,t,K) and returns:`):
+print(`[GFsimu(n,E,t,K), average, standard deviation]`):
+
+elif nargs=1 and args[1]=GFsimu then
+print(`GFsimu(n,E,t,K): Given a graph n,E, run the following simulation K times. Find a random spanning tree and count the number of leaves.`):
+print(`Then, return a polynomial in t where the coefficient of term i is the experimental probability of a random spanning containing exactly`):
+print(`i leaves.`):
+
+elif nargs=1 and args[1]=SPHelper then
+print(`SPHelper(n,A,B): Takes in sequences A and B and repeats them so that they are each length n.`):
+print(`Then, constructs a series parallel graph with the extended sequence. The resulting graph has`):
+print(`n+2 vertices. Try this to construct a book graph on 9 vertices:`):
+print(`SPHelper(7,[2],[1]):`):
+
+elif nargs=1 and args[1]=SerPar then
+print(`SerPar(P,F): Given an operation list (or array) P (of 1s and 2s) and an edge list (or array) F of the same length, constructs a series parallel from a K_2.`):
+print(`In P, 1 denotes an edge subdivision and 2 denotes doubling an edge. F indicates what edge the operation should be applied to.`):
+print(`Note that the implementation is such that the vertices 1 and 2 are always the "source and sink" of the graph.`):
+print(`Try:`):
+print(`SerPar([2,2,1]  ,[1,3,5] ); `):
+print(`This constructs the house graph.`):
+print(`Try:`):
+print(`SerPar([2,2,2]  ,[1,1,1] ); `):
+print(`This constructs a "book graph".`):
+elif nargs=1 and args[1]=AllSpanTree then
+print(`AllSpanTree(n,E): given a graph n,E, where E is an edge-set of [n], the procedure returns all spanning trees of the`):
+print(`graph, represented as a collection of edge-sets. Try:`):
+print(`AllSpanTree(GridGr(6,3))`):
+
+elif nargs=1 and args[1]=SymbSpanTreeExc then
+print(`SymbSpanTreeExc(n,E,S,a): given a graph n,E, where E is the edge-set of a graph with vertex set [n], the procedure`):
+print(`returns the number of spanning trees symbolically (with symbol a), but treats the edges in the edge-set S numerically. Try:`):
+print(`SymbSpanTreeExc(GridGr(7,3), RandomTree(GridGr(7,3))[2] ,a);`):
+print(`SymbSpanTreeExc(Cycle(4), { {1,2},{2,3},{3,4} } ,a);`):
+
+elif nargs=1 and args[1]=SymbSpanTreeInc then
+print(`SymbSpanTreeInc(n,E,S,a): see the entry for SymbSpanTreeExc. This version only treats edges in S symbolically. Try:`):
+print(`SymbSpanTreeInc(Cycle(8), { {1,2} }, a); `):
+
+elif nargs=1 and args[1]=Path then
+print(`Path(n): given positive integer n, returns n,E, where E is the edge-set of a path graph with vertex set [n].`):
+print(`Try: Path(5).`):
+
+elif nargs=1 and args[1]=Cycle then
+print(`Cycle(n): given positive integer n, returns n,E, where E is the edge-set of a cycle graph with vertex set [n].`):
+print(`Try: Cycle(4).`):
+
+
+elif nargs=1 and args[1]=Cyli then
+print(`Cyli(n,a): given positive integer n, a. Returns n,E, where E is the edge-set of a cylinder graph with vertex set [n].`):
+print(`The given cylinder graph is obtained by the product of a path on n-a vertices and a cycle of length a.`):
+print(`Try: Cyli(n,a).`):
+
+elif nargs=1 and args[1]=ProdGraph then
+print(`ProdGraph(n,E,m,F): given positive integers n,m, and sets of edges E,F on [n],[m] (respectively), returns the product`):
+print(`of the graphs defined by E and F on their respective vertex-sets. `):
+print(`Try: ProdGraph(3,{{1,2},{2,3},{3,1}},  2, {{1,2}}):`):
+print(`Equivalently, try: ProdGraph(Cycle(3), Path(2)):`):
+
+elif nargs=1 and args[1]=GridGr then
+print(`GridGr(n,a): given positive integer n, a. Returns n,E, where E is the edge-set of a grid graph with vertex set [n].`):
+print(`The given grid graph has dimensions n-a times a (dimensions are counted by vertices).`):
+print(`Try: GridGr(6,3).`):
+
+elif nargs=1 and args[1]=GridGrS then
+print(`GridGrS(R,x,N): Inputs a positive integer R>=2 and a large positive integer N. Outputs an article about the generating`):
+print(`functions for the number of spanning trees of the graphs GridGr(n+r,r), for n>=2 -- these are the grid graphs resulting`):
+print(`from the product of a path on n vertices and a path on r vertices. The procedure also provides the generating function`):
+print(`for the sequence consisting of the sum of the number of leaves over all spanning trees, the asymptotics, and the BZ constant.`):
+print(` The procedure uses rigorous guessing using N data points. If the data is insufficient to deduce the case when r=R, it`):
+print(` stops early. Try:`):
+print(`GridGrS(3,x,100);`):
+
+elif nargs=1 and args[1]=Torus then
+print(`Torus(a+b,a): The (b by a) torus graph. Use b>=1. Try`):
+print(`Torus(10,5);`):
+
+elif nargs=1 and args[1]=TorusS then
+print(`TorusS(R,x,N): Inputs a positive integer R>=2 and a large positive integer N. Outputs an article about the generating`):
+print(`functions for the number of spanning trees of the graphs Torus(n+r,r), for n>=2 -- these are the torus graphs resulting`):
+print(`from the product of a cycle on n vertices and a cycle on r vertices. The procedure also provides the generating function`):
+print(`for the sequence consisting of the sum of the number of leaves over all spanning trees, the asymptotics, and the BZ constant.`):
+print(` The procedure uses rigorous guessing using N data points. If the data is insufficient to deduce the case when r=R, it`):
+print(` stops early. Try:`):
+print(`TorusS(4,x,140);`):
+
+elif nargs=1 and args[1]=Hnr then
+print(`Hnr(n,r): given integers n>0 and r>0, generates the graph on {1,..,n} where the neighborhood of a vertex i is {i+1,..,min(i+r-1,n)} `):
+print(`Returns n,E, where E is the edge-set of such a graph on {1,..,n}.`):
+print(`For example try:`):
+print(`Hnr(10,4);`):
+
+elif nargs=1 and args[1]=HnrS then
+print(`HnrS(R,x,N): inputs a positive integer R>=2 and a positive integer N outputs an article about the generating functions`):
+print(`for the number of spanning trees of the graphs Hnr(n,r), for n>=r, whose vertices are {1, ...,n} and vertex i is connected to {i+1,..,min(i+r,n)}.`):
+print(`it also tells you the generating function for the sequence consisting of the sum of the number of leaves in all these spanning trees`):
+print(`the asympotics, and the BZ constant`):
+print(`It uses rigorous guessing using N data points. If it does not make it all the way to R, it stops sooner`):
+print(`HnrS(3,x,100);`):
+
+elif nargs=1 and args[1]=HypCub then
+print(`HypCub(s): given positive integer s, returns 2^s,E, where E is the edge-set of the hypercube graph with vertex set [2^s].`):
+print(`Try: HypCub(3).`):
+
+elif nargs=1 and args[1]=Gnr then
+print(`Gnr(n,r): given integers n>0 and r>0, generates the graph on {1,..,n} where the neighborhood of a vertex i is {i+j mod n} union {i-j mod n}; except mod is taken in {1,..,n}.`): # specific type of circulant graph
+print(`Returns n,E, where E is the edge-set of such a graph on {1,..,n}. For example try:`):
+print(`Gnr(10,4);`):
+
+
+elif nargs=1 and args[1]=GnrS then
+print(`GnrS(R,x,N): inputs a positive integer R>=2 and a positive integer N outputs an article about the generating functions`):
+print(`for the number of spanning trees of the graphs Gnr(n,r), for n>=r, whose vertices are {1, ...,n} and vertex i is connected to {i+1,..,i+r}, where it circles around, so it is regular of degree 2*r. Try: `):
+print(`it also tells you the generating function for the sequence consisting of the sum of the number if leaves in all these spanning trees`):
+print(`the asympotics, and the BZ constant`):
+print(`It uses rigorous guessing using N data points. If it does not make it all the way to R, it stops sooner`):
+print(`GnrS(3,x,100);`):
+
+elif nargs=1 and args[1]=RandomGraph then
+print(`RandomGraph(N,p): inputs N and a probability p (optional argument with default p=1/2). Returns a random graph on N vertices with edge probability p. Output is a pair N,E, where E is a set of edges on {1,..,N}.`):
+
+elif nargs=1 and args[1]=GenerateFunct then
+print(`GenerateFunct(N): given an integer N > 0, returns a list of length N with random entries in {0,..,N-1}.`):
+
+
+elif nargs=1 and args[1]=LaplMat then
+print( ` Lapl(N,G): inputs a pos. integer N and a set of edges in the graph labeled {1,...,N} outputs the Laplacian matrix as a list of lists. For example, try:`):
+print(`LaplMat(5,{{1,2},{2,3},{3,5}});`);
+
+elif nargs=1 and args[1]=NumSpanTree then
+print(`NumSpanTree(n,E): given  a graph n,E , computes the number of spanning trees of the corresponding graph`):
+
+elif nargs=1 and args[1]=RGF then
+print(`RGF(L,x): Guesses a rational generating function in x for the list of numbers L starting with x^0*L[1]+..., Try:`):
+print(`RGF([seq(fibonacci(i),i=0..20)],x);`):
+
+elif nargs=1 and args[1]=RSeq then
+print(`RSeq(m): outputs the terms of the sequence a_1,..,a_m, where a_j is the minimum number such that Gnr(j,a_j) is complete.`):
+
+
+elif nargs=1 and args[1]=SeqHnr then
+print(`SeqHnr(r,N): the first N terms, starting at n=r+2,  of the sequence enumerating the number of spanning trees of Hnr(n,r). Try:`):
+print(`SeqHnr(2,30);`):
+
+elif nargs=1 and args[1]=SeqHnrL then
+print(`SeqHnrL(r,N): the first N terms, starting at n=r+2,  of the sequence enumerating the sum of the number of leaves in all spanning trees of Hnr(n,r). Try:`):
+print(`SeqHnrL(2,30);`):
+
+
+elif nargs=1 and args[1]=SeqGnr then
+print(`SeGnr(r,N): the first N terms, starting at n=2*r+1,  of the sequence enumerating the number of spanning trees of Gnr(n,r). Try:`):
+print(`SeqGnr(2,30);`):
+
+elif nargs=1 and args[1]=SeqGnrL then
+print(`SeGnrL(r,N): the first N terms, starting at n=2*r+1,  of the sequence enumerating the sum of the number of leaves of spanning trees of Gnr(n,r). Try:`):
+print(`SeqGnrL(2,30);`):
+
+elif nargs=1 and args[1]=NumSpanTreeSeq then
+print(`NumSpanTreeSeq(F,argu,a,b): inputs a procedure F (which outputs n,E; number of vertices and edges between them) and F's list of arguments argu.`):
+print(`Then, NumSpanTreeSeq outputs a list of the number of spanning trees of the graphs F(a,op(argu)) .. F(b,op(argu)). `):
+print(`Try: NumSpanTreeSeq(HnR,[{1,3}],50,60);`):
+
+elif nargs=1 and args[1]=SymbSpanTree then
+print(`SymbSpanTree(n,E,a): computes the number of spanning trees of a graph (n,E) symbollicaly, using the symbol 'a'. Try:`):
+print(`SymbSpanTree(Cycle(4),a)`):
+
+elif nargs=1 and args[1]=RandomTree then
+print(`RandomTree(n,E): given a graph (n,E), generates a spanning tree uniformly random from its spanning trees. Returns n,F, where F are the`):
+print(`edges of the spanning tree. Try: RandomTree(Cycle(5)):`):
+
+elif nargs=1 and args[1]=RandomSuccessor then
+print(`RandomSuccessor(N): given a list N of positive integers, picks one uniformly at random.`):
+
+elif nargs=1 and args[1]=GnR then
+print(``):
+
+elif nargs=1 and args[1]=HnR then
+print(``):
+else
+print(`There is no such thing as`, args[1]):
+
+fi:
+
+end:
+
+
+################
+#Asy1(f,t,n): the asymptotic of the coefficient of t^n in the rational function f. Try:
+#Asy1(1/(1-t-t^2),t,n);
+################
+Asy1:=proc(f,t,n) local Q,lu,cha,rec,i,hal,a,k,A:
+Q:=denom(f):
+lu:=[solve(Q,t)]:
+cha:=[lu[1]]:
+rec:=evalf(abs(lu[1])):
+
+for i from 2 to nops(lu) do
+ hal:=evalf(abs(lu[i])):
+ if hal<rec then
+  cha:={lu[i]}:
+  rec:=hal:
+ elif hal=rec then
+   cha:=[op(cha),lu[i]]:
+ fi:
+od:
+k:=nops(cha):
+a:=cha[1]:
+A:=limit((1-t/a)^k*f,t=a):
+a:=simplify(1/a):
+A*a^n*expand(binomial(k+n-1,k-1)):
+end:
+
+##########
+# VtxTransNumLeavesSeq(n,E): NumLeaves for Vtx Transitive graph G
+##########
+VtxTransNumLeavesSeq:=proc(F,argu,a,b) local i:
+ [seq(VtxTransNumLeaves( F(i, op(argu)) ), i=a..b) ]:
+end:
+
+##########
+# VtxTransNumLeaves(n,E): NumLeaves for Vtx Transitive graph G
+##########
+VtxTransNumLeaves:=proc(n,E) local d,T,M:
+ M:=LaplMat(n,E):
+ d:=M[1][1]: # G should be d-regular.
+ T:=Minor(LaplDelVtx(Matrix(M),1),1,1): # num span trees of G - {1}
+ n*d*T:
+end:
+
+#########
+# NumLeavesSeq(F,m,args,a,b)
+###########
+NumLeavesSeq:=proc(F,argu,a,b) local i:
+ [seq(NumLeaves( F(i, op(argu)) ), i=a..b) ]:
+end:
+
+
+#############
+# NumLeaves(n,E):
+#############
+NumLeaves:=proc(n,E) local M,N,leafcount,v:
+ M:=Matrix(LaplMat(n,E)): # M is a list of lists 
+ 
+ leafcount:=0:
+ for v from 1 to n do:
+  N:=LaplDelVtx(M,v):                  # returns the Matrix (as a Matrix object) of G-v.
+  leafcount+= M[v][v]* Minor(N,1,1):   # Number of spanning trees of G containing v as a leaf.
+ od:
+
+ leafcount:
+end:
+
+
+###########
+# LaplDelVtx: given the Laplacian matrix M of G (as a Matrix) and a vertex v to remove. Returns the Laplacian of G-v.
+###########
+LaplDelVtx:=proc(M,v) local N,i:
+ # error cases
+ if type(M,Matrix) = false then:
+  error "Input should be a Matrix from the LinearAlgebra package.":
+ fi: 
+
+ N:=LinearAlgebra[Copy](M): #### copy M. Do this properly. M is a matrix
+ for i from 1 to RowDimension(M) do: ### nops fails if M is a matrix ###
+  if N[i,v] = -1 then:
+   N[i,i]--:
+  fi:
+ od:
+
+ Minor(Matrix(N),v,v,'output'='matrix'): # Check if N is a matrix or not a matrix.
+end:
+
+############
+# LeafWt: Receives a graph G and outputs the weight enumerator
+# Assume G is not a tree.
+###########
+LeafWt:=proc(n,E,t) local f,m,A,e,co,ent,i,j,leaves:
+ f:=expand(SymbSpanTreeExc(n,E,{},t)):
+ 
+ # edge cases
+ if f=0 then: # the case when G is disconnected and so has no spanning trees  
+  return(0):
+ fi:
+ if nops(E)=n-1 then:
+  error "The given graph is a tree.":
+ fi:
+
+ for e in E do:
+  f:=subs(t[{e[1],e[2]}]=t[e[1]]*t[e[2]] ,f):
+ od:
+ 
+ # Array such that each entry is a spanning tree and # times it appears as a coefficient. For example 2*t[1]^3 *t[2] *t[3]* t[4]
+ # encodes the star graph with vertex 1 in the middle. It appears twice in G.
+ co:=Array([coeffs(f)]): # number of times each tree appears
+ m:=NumElems(co):
+ f:=op(f):  # separate trees
+ A:=Array(1..m,[seq(1/co[i]*f[i] ,i=1..m)]): # removed the coefficients.
+
+ #B:=Array(1..m,[0$m]):  # DELETE THIS
+ 
+ for i from 1 to m do:
+  leaves:=0:
+  ent:= map[2](op,1, [op(A[i])]): # extracts coefficients of this tree
+  for j from 1 to n do:
+   if type(ent[j],posint) then:
+    leaves++
+   fi:
+  od:
+  A[i]:=t^leaves:
+ od:
+ 
+ add(co[i]*A[i] ,i=1..m):
+end: 
+
+##########
+# provides statistics on the weight enumerator of G 
+##########
+GFsimuStats:=proc(n,E,t,K) local f,av,stdev:
+ f:=GFsimu(n,E,t,K):
+ av:=subs(t=1,diff(f,t)):
+ stdev:=sqrt(subs(t=1,diff(t*diff(f,t) , t)) -av^2):
+
+ [f,av,stdev]:
+end:
+
+
+############
+# GFsimu(G,t,K)
+###########
+GFsimu:=proc(n,E,t,K) local i:
+ add(t^LeafCounter(RandomTree(n,E)), i=1..K)/K;
+end:
+
+# generates random N-vertex graph. returns N and edge-set. Takes in an optional second argument, p (probability) which is assumed to be rational.
+RandomGraph:=proc(N,p:=1/2) local E,i,j:
+E:={}:
+
+for i from 1 to N-1 do:
+ for j from i+1 to N do:
+   if rand(1..denom(p))()<=numer(p) then
+    E:= E union {{i,j}}:
+   fi:
+ od:
+od:
+
+
+N,E
+end:
+
+#######
+# generates a function from [N] to {0,..,N-1}, represented as a list of length N.
+########
+GenerateFunct:=proc(N) local k,F:
+F:=[-1$N]:
+for k from 1 to N do:
+ F[k]:=rand(0..N-1)():
+od:
+F:
+end:
+
+###########
+#
+############
+AllSpanTree:=proc(n,E) local f,m,nm,T,i,a: 
+ f:= expand(SymbSpanTree(n,E,a)):
+ m:= nops(op(1,f)): # this is the number of edges in this spanning forest/tree.
+ nm:= nops(f): # number of spanning trees
+ T:=op~(1,op~(1..m,[op(f)])):  # contains every edge in a spanning tree as a list
+ {seq( {op(1+(i-1)*m..m*i, T)} , i=1..nm) }:
+end:
+
+#############
+# Gnr(n,r)
+#############
+Gnr:=proc(n,r) local i,j,E,R:
+ R:=r:
+ if r >= n then  # I allow the user to input r >= n by simply returning G(n,n-1): 
+  R:=n-1:
+ fi:
+ if r=0 then
+  RETURN(n,{}):
+ fi:
+
+
+ # seq({i,i+1}, i=1..n-1) , {1,n}   <--- this code adds the cycle edges
+ E:=[seq({i,i+1}, i=1..n-1) , {1,n}, seq( seq( {i+1, (i+j mod n)+1 }, j=1..R ) ,i=0..n-1)]: # this exploits the symmetry of the graph to correctly index them
+
+ n, {op(E)}:
+end:
+
+###########
+# generalized Gnr. Inputs a subset R of [n]. Note that these graphs are not necessarily connected anymore! See GnR(8,{2,4}). We exclude loops. 
+###########
+GnR:=proc(n,R) local i,j,E,Rs:
+ if R={} then
+  RETURN(n,{}):
+ fi:
+ Rs:=(R mod n) intersect {seq(i,i=1..n-1)}: # to allow loops, use: {seq(i,i=0..n-1)}.
+
+ E:=[seq( seq( {i+1, (i+j mod n)+1 }, j in Rs) ,i=0..n-1)]: # this exploits the symmetry of the graph to correctly index them
+
+ n, {op(E)}:
+end:
+
+
+
+# "Conjectures" for number of spanning trees in G(n,r) for r=1,2,3
+# Given the earlier statement, this question only makes sense for n >= 2r + 2.
+# r = 1. G(n,r) = C_n so number of spanning trees is n.
+# r = 2. OEIS says this is n*Fib(n)^2 and there is a recent (2024) paper that relates it to spanning trees. A169630
+# r = 3. OEIS also relates to spanning trees. A331905. 
+
+
+###############
+#
+################
+Hnr:=proc(n,r) local i,j,E:
+ E:=[seq(seq({i,i+j}, i=1..n-j),j=1..r)]:
+
+ n, {op(E)}:
+end:
+
+#########
+# Generalized. 
+#########
+HnR:=proc(n,R) local i,j,E,Rs:
+ Rs:= R intersect {seq(j,j=1..n)}:
+
+ E:=[seq(seq({i,i+j}, i=1..n-j),j in Rs)]:
+
+ n, {op(E)}:
+end:
+
+###########
+# Torus(a+b,a)
+##########
+Torus:= proc(n,a) local b:
+b:=n-a:
+ProdGraph(Cycle(a),Cycle(b)):
+end:
+
+##########
+# Cyli(a+b,a)
+##########
+Cyli:= proc(n,a) local b:
+b:=n-a:
+ProdGraph(Cycle(a),Path(b)):
+end:
+
+###########
+# GridGr(a+b,a)
+###########
+GridGr:= proc(n,a) local b:
+b:=n-a:
+ProdGraph(Path(a),Path(b)):
+end:
+
+#########
+# Path(n): constructs a path on n vertices
+#########
+Path:=proc(n) local i:
+n,{seq({i,i+1}  ,i=1..n-1)}:
+end:
+
+# constructs a cycle on n vertices
+Cycle:=proc(n) local i:
+n,{seq({i,i+1}  ,i=1..n-1),{1,n}}:
+end:
+
+# HypCub(2^s)
+# 
+HypCub:=proc(s) local i,G:
+G:=Path(2):
+for i from 2 to s do:
+G:=ProdGraph(G, Path(2)):
+od:
+
+2^s,G[2]:
+end:
+
+# inputs two graphs n,E and m,F. Constructs their product. 
+ProdGraph:=proc(n,E,m,F) local L,e,i:
+L:=[seq(seq({e[1]+i*n,e[2]+i*n} ,e in E), i=0..m-1), seq(seq({(e[1]-1)*n+i,(e[2]-1)*n+i} ,e in F)  ,i=1..n)]:
+
+n*m,{op(L)}
+end:
+
+#SeqHn(r,N): the first N terms, starting at n=r+2  of the sequence enumerating the number of spanning trees of Hnr(n,r). Try:
+#SeqHnr(2,30);
+SeqHnr:=proc(r,N) local i:
+[seq(NumSpanTree(i,Hnr(i,r)[2]),i=r+2..N+r+1)]:
+end:
+
+
+#SeqHnL(r,N): the first N terms, starting at n=r+2  of the sequence enumerating the sum of the number of leaves of all spanning trees of Hnr(n,r). Try:
+#SeqHnrL(2,30);
+SeqHnrL:=proc(r,N) local i:
+[seq(NumLeaves(i,Hnr(i,r)[2]),i=r+2..N+r+1)]:
+end:
+
+
+#SeqGnr(r,N): the first N terms, starting at n=2r+1  of the sequence enumerating the number of spanning trees of Gnr(n,r). Try:
+#SeqGnr(2,30);
+SeqGnr:=proc(r,N) local i:
+[seq(NumSpanTree(i,Gnr(i,r)[2]),i=2*r+1..N+2*r)]:
+end:
+
+
+#SeqGnrL(r,N): the first N terms, starting at n=2r+1  of the sequence enumerating the sum of the number of leaves of spanning trees of Gnr(n,r). Try:
+#SeqGnrL(2,30);
+SeqGnrL:=proc(r,N) local i:
+[seq(NumLeaves(i,Gnr(i,r)[2]),i=2*r+1..N+2*r)]:
+end:
+
+# NumSpanTreeSeq(F,m,args,a,b)
+# Takes in a procedure F and generates a graph by outputting n,E (number of vertices and the edge-set). The procedure must take n as its first argument.
+# NumSpanTreeSeq generates a sequence of the number of spanning trees of graphs generated by F, from n=a to n=b. NumSpanTreeSeq also takes in the fixed arguments of F, argu, as a list.
+# Try: NumSpanTreeSeq(HnR,[{1,3}],50,60);
+NumSpanTreeSeq:=proc(F,argu,a,b) local i:
+ [seq(NumSpanTree( F(i, op(argu)) ), i=a..b) ]:
+end:
+
+# Computer Number of Spanning Trees
+NumSpanTree:=proc(n,G) local i,j,M:
+ M:=LaplMat(n,G):
+ Determinant(Matrix([seq([seq(M[i][j],j=1..nops(M)-1)]  ,i=1..nops(M)-1)])):
+end:
+
+
+# input graph size (vertex set) and edges between them.
+# output laplacian matrix
+LaplMat:=proc(N,G) local L,u,n,e,i,j:
+ for i from 1 to N do
+  for j from 1 to N do
+   L[i,j]:=0:
+  od:
+ od:
+
+ for e in G do:
+  u:=e[1]:
+  n:=e[2]:
+  L[u,u]:=L[u,u]+1:
+  L[n,n]:=L[n,n]+1:
+
+  L[u,n]:= -1:
+  L[n,u]:= -1:
+ od:
+
+[seq([seq(L[i,j],j=1..N)],i=1..N)]:
+
+end:
+
+# computes number of spanning trees symbolically
+SymbSpanTree:=proc(N,G,a) local L,u,n,e,i,j:
+ for i from 1 to N do
+  for j from 1 to N do
+   L[i,j]:=0:
+  od:
+ od:
+
+ for e in G do:
+  u:=e[1]:
+  n:=e[2]:
+  L[u,u]:=L[u,u]+a[{u,n}]:
+  L[n,n]:=L[n,n]+a[{u,n}]:
+
+  L[u,n]:= -a[{u,n}]:
+  L[n,u]:= -a[{u,n}]:
+ od:
+
+ L:=[seq([seq(L[i,j],j=1..N)],i=1..N)]:
+ 
+ Minor(Matrix(L), 1, 1,output='determinant'):
+ 
+end:
+
+# computes number of spanning trees symbolically, except for an edge-set S
+SymbSpanTreeExc:=proc(N,G,S,a) local L,A,u,n,e,i,j:
+ for i from 1 to N do
+  for j from 1 to N do
+   L[i,j]:=0:
+  od:
+ od:
+ 
+ A:=G minus S:
+
+ for e in A do:
+  u:=e[1]:
+  n:=e[2]:
+  L[u,u]:=L[u,u]+a[{u,n}]:
+  L[n,n]:=L[n,n]+a[{u,n}]:
+
+  L[u,n]:= -a[{u,n}]:
+  L[n,u]:= -a[{u,n}]:
+ od:
+
+ for e in S do:
+  u:=e[1]:
+  n:=e[2]:
+  L[u,u]:=L[u,u]+1:
+  L[n,n]:=L[n,n]+1:
+
+  L[u,n]:=L[u,n]-1:
+  L[n,u]:=L[n,u]-1:
+ od:
+
+ L:=[seq([seq(L[i,j],j=1..N)],i=1..N)]:
+ 
+ Minor(Matrix(L), 1, 1, output='determinant'):
+ 
+end:
+
+# computes number of spanning trees numerically, but symbolically for an edge-set S
+SymbSpanTreeInc:=proc(N,G,S,a) local L,A,u,n,e,i,j:
+ for i from 1 to N do
+  for j from 1 to N do
+   L[i,j]:=0:
+  od:
+ od:
+ 
+ A:=G minus S:
+
+ for e in S do:
+  u:=e[1]:
+  n:=e[2]:
+  L[u,u]:=L[u,u]+a[{u,n}]:
+  L[n,n]:=L[n,n]+a[{u,n}]:
+
+  L[u,n]:= -a[{u,n}]:
+  L[n,u]:= -a[{u,n}]:
+ od:
+
+ for e in A do:
+  u:=e[1]:
+  n:=e[2]:
+  L[u,u]:=L[u,u]+1:
+  L[n,n]:=L[n,n]+1:
+
+  L[u,n]:=L[u,n]-1:
+  L[n,u]:=L[n,u]-1:
+ od:
+
+ L:=[seq([seq(L[i,j],j=1..N)],i=1..N)]:
+ 
+ Minor(Matrix(L), 1, 1, output='determinant'):
+ 
+end:
+
+
+# constructs a uniformly random spanning tree
+RandomTree:=proc(n,E) local Next,i,j,N,snt,TrEd:
+ Next:=RandomTreeWithRoot(n,E,1):
+ 
+ if type(Next, Array) then 
+  N:=NumElems(Next):    
+ else:
+   N:=nops(Next):
+ fi: 
+ 
+ TrEd:= Array([0$(N-1)]):  #
+ snt:=false:
+ j:=0:
+ for i from 1 to N do: 
+  if snt or Next[i]<>0 then:
+   j++:
+   TrEd[j]:= {i,Next[i]}:
+  else:
+   snt:=true:
+  fi:
+
+ od:
+
+n,{seq(TrEd[i],i=1..N-1)}:
+end:
+
+
+#Given a connected graph n,E, constructs a random spanning tree
+RandomTreeWithRoot:=proc(n,E,r) local i,InTree, Next,Nhbrs,u,tCount:
+ InTree:=Array([false$n]): #
+ InTree[r]:=true:
+ Next:=Array([0$n]):  # Making this an array causes issues??
+ Nhbrs:=Neighbors(Graph(n,E)):
+ 
+ for i from 1 to n do:
+  u:=i:
+  while not InTree[u] do:
+    Next[u]:=RandomSuccessor(Nhbrs[u]):
+    u:=Next[u]:
+  od:
+  u:=i:
+  while not InTree[u] do:
+   InTree[u]:=true:
+   u:=Next[u]:
+  od:
+ od:
+ 
+ Next:
+end:
+
+with(ArrayTools):
+# picks a random successor, given a vertex u and its neighborhood N, picks a random neighbor
+RandomSuccessor:=proc(N):
+ 
+ if type(N, Array) then                       #
+  RETURN(N[rand(1..NumElems(N))()]):         #  
+ fi:                                         #
+ N[rand(1..nops(N))()]:
+end:
+
+# Given an operation list/array O (of 1s and 2s) and an edge list/array F of the same length, constructs a series parallel from a K_2
+# in O, 1 denotes an edge subdivision and 2 denotes doubling an edge.
+# Try:
+# SerPar([2,2,1]  ,[1,3,5] ); 
+# This constructs the house graph.
+# Try:
+# SerPar([2,2,2]  ,[1,1,1] ); 
+# This constructs a "book graph".
+SerPar:=proc(O,F) local len1,len2,E,n,o1,o2,i,j,v,e:
+ len1:=nops(O):
+ len2:=nops(F):
+ if type(O,Array) then:
+  len1:=ArrayNumElems(O):
+ fi:
+ 
+ if type(F,Array) then:
+  len2:=ArrayNumElems(F):
+ fi:
+
+ if len1 <> len2 then
+  print(`input lists must be the same length`):
+  RETURN(FAIL):
+ fi:
+ o1:=0:
+ o2:=0:
+ for i from 1 to len1 do:
+  if O[i]=1 then:
+   o1++:
+  elif O[i]=2 then:
+   o2++:
+  else:  
+   print(`first argument must be a list of 1s and 2s`):
+   return(FAIL):
+  fi:
+
+ od:
+ n:=2:
+ E:=Array( [ {1,2}, {1,2}$(o1+2*o2) ] ):
+ 
+ j:=0:
+ while n < len1 + 2 do:
+   e:=E[F[n-1]]:
+   if O[n-1]=1 then: # subdivide edge e
+    E[F[n-1]]:= {e[1], n+1}:
+    E[n+j]:= {n+1, e[2]}:
+   else:
+     E[n+j]:= {e[1], n+1}:
+     E[n+j+1]:= {n+1, e[2]}:
+     j++:
+   fi:
+
+  n++:
+ od:
+
+
+ n,convert(E,set):
+end:
+
+# take in a pair of lists A,B, which will be repeated and will be length n. 
+SPHelper:= proc(n,A,B) local i,m1,m2,A1,B1:
+ m1:=nops(A):
+ m2:=nops(B):
+ A1:=Array([0$n]):
+ B1:=Array([0$n]):
+ for i from 0 to n-1 do:
+  A1[i+1]:= A[(i mod m1)+1]:
+  B1[i+1]:= B[(i mod m2)+1]:
+ od:
+
+ # the code above takes sequences A,B and extends their length by repeating.
+ SerPar(A1,B1):
+end:
+
+# given a forest n,T, count how many leaves it has
+LeafCounter:= proc(n,T) local e,i,A,lef:
+ A:=Array([0$n]): # number of edges that hit a vertex
+ for e in T do:
+  A[e[1]]++:
+  A[e[2]]++:
+ od:
+ 
+ lef:=0:
+ for i from 1 to n do:
+   if A[i] = 1 then:
+     lef++:
+   fi:
+ od: 
+
+ lef:
+end:
+
+###start From Cfinite.txt 
+
+#SeqFromRec(S,N): Inputs S=[INI,ope]
+#where INI is the list of initial conditions, a ope a list of
+#size L, say, and a recurrence operator ope, codes a list of
+#size L, finds the first N0 terms of the sequence satisfying
+#the recurrence f(n)=ope[1]*f(n-1)+...ope[L]*f(n-L).
+#For example, for the first 20 Fibonacci numbers,
+#try: SeqFromRec([[1,1],[1,1]],20);
+SeqFromRec:=proc(S,N) local gu,L,n,i,INI,ope:
+INI:=S[1]:ope:=S[2]:
+if not type(INI,list) or not type(ope,list) then
+ print(`The first two arguments must be lists `):
+ RETURN(FAIL):
+fi:
+L:=nops(INI):
+if nops(ope)<>L then
+ print(`The first two arguments must be lists of the same size`):
+RETURN(FAIL):
+fi:
+
+if not type(N,integer) then
+ print(`The third argument must be an integer`, L):
+ RETURN(FAIL):
+fi:
+
+if N<L then
+ RETURN([op(1..N,INI)]):
+fi:
+
+gu:=INI:
+
+for n from 1 to N-L do
+ gu:=[op(gu),expand(add(gu[nops(gu)-i+1]*ope[i],i=1..L))]:
+od:
+
+gu:
+end:
+
+
+#CtoR(S,t), the rational function, in t, whose coefficients
+#are the members of the C-finite sequence S. For example, try:
+#CtoR([[1,1],[1,1]],t);
+
+CtoR:=proc(S,t) local D1,i,N1,L1,f,f1,L:
+if not (type(S,list) and  nops(S)=2 and type(S[1],list) and type(S[2],list)
+        and nops(S[1])=nops(S[2]) and type(t, symbol) ) then
+   print(`Bad input`):
+   RETURN(FAIL):
+fi:
+
+D1:=1-add(S[2][i]*t^i,i=1..nops(S[2])):
+N1:=add(S[1][i]*t^(i-1),i=1..nops(S[1])):
+L1:=expand(D1*N1):
+
+
+L1:=add(coeff(L1,t,i)*t^i,i=0..nops(S[1])-1):
+f:=L1/D1:
+L:=degree(D1,t)+10:
+f1:=taylor(f,t=0,L+1):
+if expand([seq(coeff(f1,t,i),i=0..L)])<>expand(SeqFromRec(S,L+1)) then
+print([seq(coeff(f1,t,i),i=0..L)],SeqFromRec(S,L+1)):
+ RETURN(FAIL):
+else
+ RETURN(f):
+fi:
+end:
+
+
+#GuessRec1(L,d): inputs a sequence L and tries to guess
+#a recurrence operator with constant cofficients of order d
+#satisfying it. It returns the initial d values and the operator
+# as a list. For example try:
+#GuessRec1([1,1,1,1,1,1],1);
+GuessRec1:=proc(L,d) local eq,var,a,i,n:
+
+if nops(L)<=2*d+2 then
+ print(`The list must be of size >=`, 2*d+3 ):
+ RETURN(FAIL):
+fi:
+
+var:={seq(a[i],i=1..d)}:
+
+eq:={seq(L[n]-add(a[i]*L[n-i],i=1..d),n=d+1..nops(L))}:
+
+var:=solve(eq,var):
+
+if var=NULL then
+ RETURN(FAIL):
+else
+ RETURN([[op(1..d,L)],[seq(subs(var,a[i]),i=1..d)]]):
+fi:
+
+end:
+
+
+
+
+#GuessRec(L): inputs a sequence L and tries to guess
+#a recurrence operator with constant cofficients 
+#satisfying it. It returns the initial  values and the operator
+# as a list. For example try:
+#GuessRec([1,1,1,1,1,1]);
+GuessRec:=proc(L) local gu,d:
+
+for d from 1 to trunc(nops(L)/2)-2 do
+ gu:=GuessRec1(L,d):
+ if gu<>FAIL then
+   RETURN(gu):
+ fi:
+od:
+FAIL:
+
+end:
+
+#RGF(L,x): Guesses a rational generating function in x for the list of numbers L starting with x^0*L[1]+..., Try:
+#RGF([seq(fibonacci(i),i=0..20)],x);
+RGF:=proc(L,x) local gu:
+gu:=GuessRec(L):
+if gu=FAIL then
+ RETURN(FAIL):
+else
+factor(CtoR(gu,x)):
+fi:
+end:
+
+#################### End From Cfinite.txt  ####################################
+
+
+##########
+# GridGrS: Given a fixed dimension r>=2, computes the number of spanning trees of GridGr(r+s,r), the sum of the number of leaves of all spanning trees and
+# their asymptotics, as well as the BZ constant
+###############
+GridGrS:=proc(R,x,N) local r,c,L,a,n,H,t0,f,i,Af,Ag,C,g:
+
+
+ t0:=time():
+ print(`Generating Functions for Enumerating the Number of Spanning Trees (and Sum of the Leaves) in Grid Graphs with dimensions s by r, for fixed dimension r,`):
+ print(`as well as their asymptotics and the BZ constant`):
+
+ printcat(`for r from 2 to `, R):
+ print(``):
+ print(`By Shalosh B. Ekhad `):
+ print(``):
+
+
+
+ L:=[]:
+ c:=0:
+
+
+
+ for r from 2 to R  do
+  f:=RGF(NumSpanTreeSeq(GridGr,[r],r+2, N+r+1) ,x): 
+
+  if f=FAIL then
+   RETURN(L):
+  fi:
+
+  g:=RGF(NumLeavesSeq(GridGr,[r],r+2, N+r+1),x):
+
+
+  if g=FAIL then
+   RETURN(L):
+  fi:
+
+  c:=c+1:
+  print(``):
+  print(`Theorem number`, c):
+  print(``):
+  print(`Part I:`):
+
+  printcat(`Let a(n) be the number of spanning trees of the grid graph with a fixed dimension `, r, ` (counted by vertices). Then`):
+  print(``):
+  print(Sum(a[n+r]*x^n,n=0..infinity)=f):
+  print(``):
+  print(`and in Maple notation`):
+  print(``):
+  lprint(f):
+  print(``):
+
+  Af:=evalf(Asy1(f,x,n)):  
+
+  print(`The asymptotics is`):
+  print(``):
+  print(evalf(Af,20)):
+  print(``):
+
+  print(`Part II:`):
+
+  print(`Let b(n) be the sum of the number of leaves in all spanning trees of the above-mentioned graph. Then`):
+  print(``):
+  print(Sum(b[n+r]*x^n,n=0..infinity)=g):
+  print(``):
+
+  print(``):
+  print(`and in Maple notation`):
+  print(``):
+  lprint(g):
+  print(``):
+
+  Ag:=evalf(Asy1(g,x,n)):
+
+  print(`The asymptotic behavior is`):
+  print(``):
+  print(evalf(Ag,20)):
+  print(``):
+  print(`The BZ constant is`):
+  print(``):
+  C:=limit(Ag/Af/(n*r),n=infinity):  ############# verify this with Dr Z ################
+  print(``):
+  print(evalf(C,20)):
+  print(``):
+  L:=[op(L),[f,g]]:
+ od:
+
+ print(``):
+
+ print(`--------------------------------`):
+ print(``):
+ print(`This took`, time()-t0, `seconds. `):
+ print(``):
+
+ L:
+end:
+
+##########
+# TorusS: Given a fixed dimension r>=3, computes the number of spanning trees of Torus(r+s,r), the sum of the number of leaves of all spanning trees and
+# their asymptotics, as well as the BZ constant
+# try: TorusS(4,x,50);
+#############
+TorusS:=proc(R,x,N) local r,c,L,a,n,H,t0,f,i,Af,Ag,C,g:
+
+
+ t0:=time():
+ print(`Generating Functions for Enumerating the Number of Spanning Trees (and Sum of the Leaves) in Torus Graphs with dimensions s by r, for fixed dimension r,`):
+ print(`as well as their asymptotics and the BZ constant`):
+
+ printcat(`for r from 2 to `, R):
+ print(``):
+ print(`By Shalosh B. Ekhad `):
+ print(``):
+
+
+
+ L:=[]:
+ c:=0:
+
+
+
+ for r from 2 to R  do
+  f:=RGF(NumSpanTreeSeq(Torus,[r],r+2, N+r+1) ,x): 
+
+  if f=FAIL then
+   RETURN(L):
+  fi:
+
+  g:=RGF(VtxTransNumLeavesSeq(Torus,[r],r+2, N+r+1),x):
+
+
+ if g=FAIL then
+  RETURN(L):
+ fi:
+
+ c:=c+1:
+ print(``):
+ print(`Theorem number`, c):
+ print(``):
+ print(`Part I:`):
+
+ printcat(`Let a(n) be the number of spanning trees of the Torus graph with a fixed dimension `, r, ` (counted by vertices). Then`):
+ print(``):
+ print(Sum(a[n+r]*x^n,n=0..infinity)=f):
+ print(``):
+ print(`and in Maple notation`):
+ print(``):
+ lprint(f):
+ print(``):
+
+ Af:=evalf(Asy1(f,x,n)):  
+
+ print(`The asymptotics for a(n) is`):
+ print(``):
+ print(evalf(Af,20)):
+ print(``): 
+
+ print(`Part II:`):
+
+ print(`Let b(n) be the sum of the number of leaves in all spanning trees of the above-mentioned graph. Then`):
+ print(``):
+ print(Sum(b[n+r]*x^n,n=0..infinity)=g):
+ print(``):
+
+ print(``):
+ print(`and in Maple notation`):
+ print(``):
+ lprint(g):
+ print(``):
+
+ Ag:=evalf(Asy1(g,x,n)):
+
+ print(`The asymptotics for b(n) is`):
+ print(``):
+ print(evalf(Ag,20)):
+ print(``):
+ print(`The BZ constant is`):
+ print(``):
+ C:=limit(Ag/Af/(n*r),n=infinity):  ############# verify this with Dr Z ################
+ print(``):
+ print(evalf(C,20)):
+ print(``):
+ L:=[op(L),[f,g]]:
+ od:
+
+ print(``):
+
+ print(`--------------------------------`):
+ print(``):
+ print(`This took`, time()-t0, `seconds. `):
+ print(``):
+
+L:
+end:
+
+#############
+# HnrS(R,x,N): inputs a positive integer R>=2 and a positive integer N outputs an article with genearting functions
+# for the number of spanning trees of Hnr(n,r), the sum of the number of leaves of all spanning trees and
+# their asymptotics, as well as the BZ constant
+#############
+HnrS:=proc(R,x,N) local r,c,L,a,n,H,t0,f,i,Af,Ag,C,g:
+
+
+ t0:=time():
+ print(`Generating Functions for Enumerating the Number of Spanning Trees (and Sum of the Leaves) in Friendship graphs where n people live in a one-sided STRAIGHT street, and every one is friends with all the neighbors distance at most r`):
+ print(`as well as their asymptotics and the BZ constant`):
+
+ print(`for r from 2 to`, R):
+ print(``):
+ print(`By Shalosh B. Ekhad `):
+ print(``):
+
+
+
+ L:=[]:
+ c:=0:
+
+
+
+ for r from 2 to R  do
+ f:=RGF(SeqHnr(r,N),x):
+
+ if f=FAIL then
+  RETURN(L):
+ fi:
+
+ g:=RGF(SeqHnrL(r,N),x):
+
+
+ if g=FAIL then
+  RETURN(L):
+ fi:
+
+ c:=c+1:
+ print(``):
+ print(`Theorem number`, c):
+ print(``):
+ print(`Part I:`):
+
+ print(`Let a(n) be the number of spanning trees of the graph`, H[n,r], `whose vertices are 1, ...,n, and where every vertex i is connected to i+1,...`, min(i+r,n), ` Then`):
+ print(``):
+ print(Sum(a[n+r]*x^n,n=0..infinity)=f):
+ print(``):
+ print(`and in Maple notation`):
+ print(``):
+ lprint(f):
+ print(``):
+
+ Af:=Asy1(f,x,n):
+
+ print(`The asympotics is`):
+ print(``):
+ print(evalf(Af,20)):
+ print(``):
+
+ print(`Part II:`):
+
+ print(`Let b(n) be the sum of the number of leaves in all spanning trees of the above-mentioned graph`, H[n,r], ` Then`):
+ print(``):
+ print(Sum(b[n+r]*x^n,n=0..infinity)=g):
+ print(``):
+
+ print(``):
+ print(`and in Maple notation`):
+ print(``):
+ lprint(g):
+ print(``):
+
+ Ag:=Asy1(g,x,n):
+
+ print(`The asympotics is`):
+ print(``):
+ print(evalf(Ag,20)):
+ print(``):
+ print(`The BZ constant is`):
+ print(``):
+ C:=limit( evalf( (Ag)/eval(Af)/n) ,n=infinity):
+ print(``):
+ print(evalf(C,20)):
+ print(``):
+ L:=[op(L),[f,g]]:
+ od:
+
+ print(``):
+
+ print(`--------------------------------`):
+ print(``):
+ print(`This took`, time()-t0, `seconds. `):
+ print(``):
+
+ L:
+end:
+
+
+###############
+GnrS:=proc(R,x,N) local r,c,L,a,n,H,t0,f,i,Af,Ag,C,g:
+
+
+ t0:=time():
+ print(`Generating Functions for Enumerating the Number of Spanning Trees (and Sum of the Leaves) in Friendship graphs where n people live in a CIRULAR street, and every one is friends with all the neighbors distance at most r`):
+ print(`as well as their asymptotics and the BZ constant`):
+
+ print(`for r from 2 to`, R):
+ print(``):
+ print(`By Shalosh B. Ekhad `):
+ print(``):
+
+
+
+ L:=[]:
+ c:=0:
+
+
+
+ for r from 2 to R  do
+ f:=RGF(SeqGnr(r,N),x):
+
+ if f=FAIL then
+ RETURN(L):
+ fi:
+
+ g:=RGF(VtxTransNumLeavesSeq(Gnr, [r], 2*r+1, 2*r+2+N),x):
+
+
+ if g=FAIL then
+  RETURN(L):
+ fi:
+
+ c:=c+1:
+ print(``):
+ print(`Theorem number`, c):
+ print(``):
+ print(`Part I:`):
+ print(`Let a(n) be the number of spanning trees of the graph`, G[n,r], `whose vertices are 1, ...,n, arranged in a circle  and there is an edge between two vertices iff their distane is <=`, r, ` Then`):
+ print(``):
+ print(Sum(a[n+r]*x^n,n=0..infinity)=f):
+ print(``):
+ print(`and in Maple notation`):
+ print(``):
+ lprint(f):
+ print(``): 
+
+ Af:=evalf(Asy1(f,x,n)):
+
+ print(`The asympotics is`):
+ print(``):
+ print(evalf(Af,20)):
+ print(``):
+
+ print(`Part II:`):
+
+ print(`Let b(n) be the sum of the number of leaves in all spanning trees of the above-mentioned graph`, G[n,r], ` Then`):
+ print(``):
+ print(Sum(b[n+r]*x^n,n=0..infinity)=g):
+ print(``):
+
+ print(``):
+ print(`and in Maple notation`):
+ print(``):
+ lprint(g):
+ print(``):
+
+ Ag:=evalf(Asy1(g,x,n)):
+
+ print(`The asympotics is`):
+ print(``):
+ print(evalf(Ag,20)):
+ print(``):
+ print(`The BZ constant is`):
+ print(``):
+ C:=limit(Ag/Af/n,n=infinity):
+ print(``):
+ print(evalf(C,20)):
+ print(``):
+ L:=[op(L),[f,g]]:
+ od:
+
+ print(``):
+
+ print(`--------------------------------`):
+ print(``):
+ print(`This took`, time()-t0, `seconds. `):
+ print(``):
+
+ L:
+end:
+
+##############
+# GnrSstupid(R,x,N): inputs a positive integer R>=2 and a positive integer N outputs an article with genearting functions
+# for the number of spanning trees of Gnr(n,r), the sum of the number of leaves of all spanning trees and
+# their asymptotics, as well as the BZ constant
+################
+GnrSstupid:=proc(R,x,N) local r,c,L,a,n,H,t0,f,i,Af,Ag,C,g:
+
+
+t0:=time():
+print(`Generating Functions for Enumerating the Number of Spanning Trees (and Sum of the Leaves) in Friendship graphs where n people live in a CIRULAR street, and every one is friends with all the neighbors distance at most r`):
+print(`as well as their asymptotics and the BZ constant`):
+
+print(`for r from 2 to`, R):
+print(``):
+print(`By Shalosh B. Ekhad `):
+print(``):
+
+
+
+L:=[]:
+c:=0:
+
+
+
+for r from 2 to R  do
+f:=RGF(SeqGnr(r,N),x):
+
+if f=FAIL then
+ RETURN(L):
+fi:
+
+g:=RGF(SeqGnrL(r,N),x):
+
+
+if g=FAIL then
+ RETURN(L):
+fi:
+
+c:=c+1:
+print(``):
+print(`Theorem number`, c):
+print(``):
+print(`Part I:`):
+print(`Let a(n) be the number of spanning trees of the graph`, G[n,r], `whose vertices are 1, ...,n, arranged in a circle  and there is an edge between two vertices iff their distane is <=`, r, ` Then`):
+print(``):
+print(Sum(a[n+r]*x^n,n=0..infinity)=f):
+print(``):
+print(`and in Maple notation`):
+print(``):
+lprint(f):
+print(``):
+
+Af:=evalf(Asy1(f,x,n)):
+
+print(`The asympotics is`):
+print(``):
+print(evalf(Af,20)):
+print(``):
+
+print(`Part II:`):
+
+print(`Let b(n) be the sum of the number of leaves in all spanning trees of the above-mentioned graph`, G[n,r], ` Then`):
+print(``):
+print(Sum(b[n+r]*x^n,n=0..infinity)=g):
+print(``):
+
+print(``):
+print(`and in Maple notation`):
+print(``):
+lprint(g):
+print(``):
+
+Ag:=evalf(Asy1(g,x,n)):
+
+print(`The asympotics is`):
+print(``):
+print(evalf(Ag,20)):
+print(``):
+print(`The BZ constant is`):
+print(``):
+C:=limit(Ag/Af/n,n=infinity):
+print(``):
+print(evalf(C,20)):
+print(``):
+L:=[op(L),[f,g]]:
+od:
+
+print(``):
+
+print(`--------------------------------`):
+print(``):
+print(`This took`, time()-t0, `seconds. `):
+print(``):
+
+L:
+end:
+
+
+#GnrSold(R,x,N): inputs a positive integer R>=2 and a positive integer N outputs an article with genearting functions
+#for the number of spanning trees 
+GnrSold:=proc(R,x,N) local r,c,L,a,n,H,t0,f,i:
+
+t0:=time():
+
+
+print(`Generating Functions for Enumerating the Number of Spanning Trees in Friendship graphs where n people live in a one-sided CIRCULAR street, and every one is friends with all the neighbors distance at most r`):
+print(`for r from 2 to`, R):
+print(``):
+print(`By Shalosh B. Ekhad `):
+print(``):
+
+
+L:=[]:
+c:=0:
+
+
+
+for r from 2 to R  do
+f:=RGF(SeqGnr(r,N),x):
+
+if f=FAIL then
+ RETURN(L):
+fi:
+
+c:=c+1:
+print(``):
+print(`Theorem number`, c):
+print(``):
+print(`Let a(n) be the number of spanning trees of the graph`, G[n,r], `whose vertices are 1, ...,n, arranged in a circle  and there is an edge between two vertices iff their distane is <=`, r, ` Then`):
+print(``):
+print(Sum(a[n+2*r+1]*x^n,n=0..infinity)=f):
+print(``):
+print(`and in Maple notation`):
+print(``):
+lprint(f):
+print(``):
+L:=[op(L),f]:
+od:
+
+print(``):
+
+print(`--------------------------------`):
+print(``):
+print(`This took`, time()-t0, `seconds. `):
+print(``):
+
+L:
+end:
+
+#BZc(F,[arg2..argn],st,K,c): Given a graph-generating procedure F which takes in arguments arg1...argn, parametrized by n, and a starting place st
+#and ending place K for guessing parameters, where the family is parametrized by n and the n-th graph has n*c vertices. Outputs the so-called 
+#Blanco-Zeilberger constant for that family that is the limit of the average number of leaves in a random spanning tree divided by the number of vertices
+#Note that for the complete graph, i.e. all labeled trees, this constant is 1/e. Try`):
+#BZc(HnR,[{1,3}],2,60,1);
+
+BZc:=proc(F,argu,st,K,c) local L0,L1,f0,f1,t,A0,A1,n:
+ L0:=NumSpanTreeSeq(F,argu,st,K):
+ L1:=NumLeavesSeq(F,argu,st,K):
+
+ f0:=RGF(L0,t):
+
+ if f0=FAIL then
+ print(` Make `, K, `bigger `):
+  RETURN(FAIL):
+ fi:
+
+ f1:=RGF(L1,t):
+
+ if f1=FAIL then
+ print(` Make `, K, `bigger `):
+  RETURN(FAIL):
+ fi:
+
+ f0:=t^st*f0:
+ f1:=t^st*f1:
+
+ A0:=Asy1(f0,t,n):
+ A1:=Asy1(f1,t,n):
+
+evalf( limit(A1/A0/c/n,n=infinity)):
+
+end:
+
+BZc2:=proc(F,argu,st,K,c) local L0,L1,f0,f1,t,A0,A1,n:
+ L0:=NumSpanTreeSeq(F,argu,st,K):
+ L1:=VtxTransNumLeavesSeq(F,argu,st,K):
+
+ f0:=RGF(L0,t):
+
+ if f0=FAIL then
+ print(` Make `, K, `bigger `):
+  RETURN(FAIL):
+ fi:
+
+ f1:=RGF(L1,t):
+
+ if f1=FAIL then
+ print(` Make `, K, `bigger `):
+  RETURN(FAIL):
+ fi:
+
+ f0:=t^st*f0:
+ f1:=t^st*f1:
+
+ A0:=Asy1(f0,t,n):
+ A1:=Asy1(f1,t,n):
+
+evalf( limit(A1/A0/c/n,n=infinity)):
+
+end:
+
+BZcS:=proc(F,argu,st,K,c) local L0,L1,f0,f1,t,A0,A1,n:
+ L0:=NumSpanTreeSeq(F,argu,st,K):
+ L1:=NumLeavesSeq(F,argu,st,K):
+
+ f0:=RGF(L0,t):
+
+ if f0=FAIL then
+ print(` Make `, K, `bigger `):
+  RETURN(FAIL):
+ fi:
+
+ f1:=RGF(L1,t):
+
+ if f1=FAIL then
+ print(` Make `, K, `bigger `):
+  RETURN(FAIL):
+ fi:
+
+ f0:=t^st*f0:
+ f1:=t^st*f1:
+
+ A0:=Asy1(f0,t,n):
+ A1:=Asy1(f1,t,n):
+
+limit(A1/A0/c/n,n=infinity):
+
+end:
+
+BZcSV:=proc(F,argu,st,K,c) local L0,L1,f0,f1,t,A0,A1,n:
+ L0:=NumSpanTreeSeq(F,argu,st,K):
+ L1:=VtxTransNumLeavesSeq(F,argu,st,K):
+
+ f0:=RGF(L0,t):
+
+ if f0=FAIL then
+ print(` Make `, K, `bigger `):
+  RETURN(FAIL):
+ fi:
+
+ f1:=RGF(L1,t):
+
+ if f1=FAIL then
+ print(` Make `, K, `bigger `):
+  RETURN(FAIL):
+ fi:
+
+ f0:=t^st*f0:
+ f1:=t^st*f1:
+
+ A0:=Asy1(f0,t,n):
+ A1:=Asy1(f1,t,n):
+
+limit(A1/A0/c/n,n=infinity):
+
+end:
+
+
+# printcat: uses print() to print the concatenation of its arguments.
+printcat:=proc(A) local X,i:
+ uses StringTools:
+ X:= cat(args[1..-1]):
+ print(convert(X,name));          # the conversion is so that printcat("test") will print without quotations.
+ return(NULL);
+end:
+
+
+
+
+
+
+Randomize():
+
+# EstAvgNumLeaves(P,n,r,K)
+# Inputs a procedure name P that constructs a graph with two parameters
+EstAvgNumLeaves:=proc(P,n,r,K) local G,T,i,numL:
+ if K<100 then:
+  print(`Warning: small sample size. The estimated average may be less precise.`):
+ fi:
+ G:=P(n,r):
+ numL:=0:
+ for i from 1 to K do:
+  T:=RandomTree(G):
+  numL+=LeafCounter(T):
+ od:
+
+ numL/K:
+end:
